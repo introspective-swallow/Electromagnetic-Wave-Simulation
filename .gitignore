@@ -1,5 +1,12 @@
 # Don't include png and gif folders
 *-out/
+animations/
+figs/
+
+# Hide some local files temporarily
+manim_tests/
+meep_tests/
+test_pmc.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
