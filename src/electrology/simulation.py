@@ -1,7 +1,7 @@
-from source import Source
-from grid import Grid
-from updater import Updater
-from boundary import Boundary_Update
+from .source import Source
+from .grid import Grid
+from .updater import Updater
+from .boundary import Boundary_Update
 import time
 from tqdm import tqdm
 from matplotlib import pyplot as plt
