@@ -41,9 +41,10 @@ class Grid():
             self.sgm_m = np.ones(self.nx-1) * sim.sigma_star
 
         self.cb = (self.dt / self.eps) / (1 + self.dt * self.sgm / (2 * self.eps))
+        self.cb /= self.dx # Add dx to the denominator
         self.ca = (1 - self.dt * self.sgm / (2 * self.eps)) / (1 + self.dt * self.sgm / (2 * self.eps))
-
         self.db = (self.dt / self.mu) / (1 + self.dt * self.sgm_m / (2 * self.mu))
+        self.db /= self.dx # Add dx to the denominator
         self.da = (1 - self.dt * self.sgm_m / (2 * self.mu)) / (1 + self.dt * self.sgm_m / (2 * self.mu))
 
         assert len(self.cb) == self.nx

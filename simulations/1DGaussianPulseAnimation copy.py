@@ -7,7 +7,7 @@ from scipy.interpolate import interp1d
 ANIMATIONS = "/home/gui/Repos/Electromagnetic-Wave-Simulation/animations/"
 FIGS = "/home/gui/Repos/Electromagnetic-Wave-Simulation/figs/"
 
-def fdtd_1d(c, dt, dx, nx, nt, initial_conditions):
+def fdtd_1d(c, dt, dx, nx, nt, wavelength, initial_conditions):
     """
     Simulate 1D Maxwell's equations using the explicit second-order FDTD method.
 
@@ -32,7 +32,7 @@ def fdtd_1d(c, dt, dx, nx, nt, initial_conditions):
     u = np.zeros((nt, nx))
 
     # Initialize rectangular source
-    u[0], u[1] = initial_conditions(nx, dt)
+    u[0], u[1] = initial_conditions(nx, dt, cc=wavelength)
 
     # Time stepping loop
     for n in range(1, nt - 1):
@@ -52,10 +52,10 @@ def fdtd_1d(c, dt, dx, nx, nt, initial_conditions):
 # Simulation parameters
 c = 1.0            # Wave propagation speed
 dx = 0.01          # Spatial step
-nx = 250           # Number of spatial points
+nx = 1000           # Number of spatial points
 
 # Define an initial condition for t=0,1
-def gaussian_pulse(nx, dt, a=1.0, b=0.5, cc=0.05):
+def gaussian_pulse(nx, dt, a=1.0, b=100*dx, cc=0.06):
     # Set a Gaussian pulse as initial condition
     # t0 is the initial condition at time t=0
     # t1 should be the initial condition projected one time step into the future
@@ -69,52 +69,28 @@ def gaussian_pulse(nx, dt, a=1.0, b=0.5, cc=0.05):
     return t0, t1
 
 # Courant stability factors to test
-S_values = [1.0, 0.99, 0.5]
+S = 0.5
 
 # Time step corresponding to S values
-dt_values = [S * dx / c for S in S_values]
+dt = S * dx / c
+
+wavelengths = [0.05, 0.03, 0.02]
 
 # Choose a time maximum and choose the number of time steps for each S value so that it perfectly matches the time maximum
-nt = 101
-nt_values = [int(nt * dt_values[0] / dt) for dt in dt_values]
-print("Max time for each:", [dt * nt for dt, nt in zip(dt_values, nt_values)])
-print("Number of time steps for each:", nt_values)
+nt = 500
+print("Max time:", dt * nt)
+print("Number of time steps:", nt)
 
 # Compute wavefields for all S values
-wavefields = [fdtd_1d(c, dt, dx, nx, nt, gaussian_pulse) for dt, nt in zip(dt_values, nt_values)]
-
-# Resample wavefields to match the smallest time step
-def resample_wavefields(wavefields, dt_values, common_dt, total_time):
-    start_time = time.time()
-    resampled_wavefields = []
-
-    common_time = np.linspace(0, total_time, int(total_time / common_dt) + 1)
-    for i, (wavefield, dt) in enumerate(zip(wavefields, dt_values)):
-        # Original time points
-        original_time = np.arange(wavefield.shape[0]) * dt
-        
-        # Interpolate for each spatial point
-        interpolator = interp1d(original_time, wavefield, axis=0, kind="linear", fill_value="extrapolate")
-        resampled_wavefield = interpolator(common_time)  # 2D array (time, space)
-        
-        # Clip last value to avoid interpolation errors
-        resampled_wavefield = resampled_wavefield[:-1]
-        resampled_wavefields.append(resampled_wavefield)
-    print(f"Resampling time: {time.time() - start_time:.2f} seconds")
-    return resampled_wavefields
+wavefields = [fdtd_1d(c, dt, dx, nx, nt, wavelength, gaussian_pulse) for wavelength in wavelengths]
 
 # Combined animation function
-def animate_combined_wavefields(wavefields, S_values, save=False):
+def animate_combined_wavefields(wavefields, wavelengths, save=False):
     # Common time step based on the smallest dt
-    common_dt = max(dt_values)
-
-    # Resample wavefields
-    aligned_wavefields = resample_wavefields(wavefields, dt_values, common_dt, nt * dt_values[0])
-
     fig, ax = plt.subplots(figsize=(10, 5))
     style = ["r-", "g--", "b--"]
-    lines = [ax.plot(aligned_wavefields[i][0], style[i], label=f"S = {S}")[0] for i, S in enumerate(S_values)]
-    ax.set_ylim(np.min(aligned_wavefields)*1.1, np.max(aligned_wavefields)*1.1)
+    lines = [ax.plot(wavefields[i][0], style[i], label=f"b = {wavelength}")[0] for i, wavelength in enumerate(wavelengths)]
+    ax.set_ylim(np.min(wavefields)*1.1, np.max(wavefields)*1.1)
     ax.set_xlabel("Position")
     ax.set_ylabel("Amplitude")
     ax.legend()
@@ -124,16 +100,16 @@ def animate_combined_wavefields(wavefields, S_values, save=False):
 
     def update(frame):
         for i, line in enumerate(lines):
-            line.set_ydata(aligned_wavefields[i][frame])
-        ax.set_title(f"Time: {(frame) * dt_values[0]:.2f} s")
-        if not save and frame == len(aligned_wavefields[0])-1:
+            line.set_ydata(wavefields[i][frame])
+        ax.set_title(f"Time: {(frame) * dt:.2f} s")
+        if not save and frame == len(wavefields[0])-1:
             ani.event_source.stop()
             plt.pause(5)
             ani.event_source.start()
         return lines
 
     # Create the animation
-    ani = FuncAnimation(fig, update, frames=range(len(aligned_wavefields[0])), blit=False, repeat=True, interval=100)
+    ani = FuncAnimation(fig, update, frames=range(len(wavefields[0])), blit=False, repeat=True, interval=100)
     if save:
         ani.save(ANIMATIONS + '1DGaussianPulse.gif', writer='pillow')
         print("Animation saved as 1DGaussianPulse.gif.")
@@ -141,4 +117,4 @@ def animate_combined_wavefields(wavefields, S_values, save=False):
 
 # Animate all wavefields
 print("Animating...")
-animate_combined_wavefields(wavefields, S_values, save=False)
+animate_combined_wavefields(wavefields, wavelengths, save=False)

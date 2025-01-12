@@ -18,6 +18,16 @@ class PointSource():
     def update_source(self, grid, t):
         grid.Ez[self.source_position] += self.source_field[t]
 
+class SmoothSource():
+    def __init__(self):
+        super().__init__()
+        self.source_position = None
+        self.source_field = None
+        self.gaussian_envelope = None
+
+    def update_source(self, grid, t):
+        grid.Ez[:] += self.source_field[t] * self.gaussian_envelope
+
 class GaussianPulse(PointSource):
     def __init__(self, source_position, source_peak_timestep, source_width):
         super().__init__()
@@ -30,6 +40,19 @@ class GaussianPulse(PointSource):
         tspace = np.arange(sim.grid.nt)
         self.source_field = np.exp(-((tspace - self.source_peak_timestep) ** 2) / (2 * self.source_width ** 2))
 
+class SmoothSinusoidal1D(SmoothSource):
+    def __init__(self, source_position, source_frequency, source_width):
+        super().__init__()
+        self.nt = None
+        self.source_position = source_position
+        self.source_frequency = source_frequency
+        self.source_width = source_width
+
+    def init_simulation(self, sim):
+        tspace = np.arange(sim.grid.nt) * sim.grid.dt
+        self.source_field = np.sin(2 * np.pi * self.source_frequency * tspace)
+        grid_indices = np.arange(sim.grid.nx)
+        self.gaussian_envelope = np.exp(-((grid_indices - self.source_position) ** 2) / (2 * self.source_width ** 2))
 
 class RickerWavelet(PointSource):
     def __init__(self, source_position, source_peak_frequency=1, wavelength_dx=None, temporal_delay=1, delay_multiple=None):
@@ -111,9 +134,6 @@ class Sinusoidal2D(Source2D):
         # Create temporal profile of the source
         tspace = np.arange(sim.grid.nt)*sim.grid.dt
         source_temporal = np.sin(2 * np.pi * self.source_frequency * tspace)
-        
-        # import matplotlib.pyplot as plt
-        # plt.plot(tspace, source_temporal)
         
         # Create spatial profile of the source
         x, y = np.meshgrid(np.arange(sim.grid.nx1), np.arange(sim.grid.nx2), indexing="ij")

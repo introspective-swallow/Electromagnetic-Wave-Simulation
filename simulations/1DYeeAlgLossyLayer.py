@@ -1,8 +1,8 @@
-from simulation import Simulation
-from grid import Grid
-from updater import Updater
-from source import GaussianPulse, RickerWavelet
-from boundary import ABC_1order, ABC_2order, Boundary_Update, ABC_1orderLeft
+from electrology.simulation import Simulation1D
+from electrology.grid import Grid
+from electrology.updater import Updater
+from electrology.source import GaussianPulse, RickerWavelet
+from electrology.boundary import ABC_1order, ABC_2order, Boundary_Update, ABC_1orderLeft
 import numpy as np
 
 # Simulation parameters
@@ -24,7 +24,7 @@ nt = 500  # Number of time steps
 cdtds = 1 # Courant number
 
 
-loss = 0.02
+loss = 0.06
 match_eps = 5
 match_loss_m = mu_0 * loss / (epsilon_0)
 
@@ -57,7 +57,7 @@ src = GaussianPulse(source_position=50, source_peak_timestep=30, source_width=5)
 
 #bdr = ABC_2order()
 
-a = Simulation(g, upd, src, ABC_1orderLeft(), **const)
+a = Simulation1D(g, upd, src, ABC_1orderLeft(), **const)
 
 a.run()
 a.animate(frame_interval=10, reescale_fields=False)

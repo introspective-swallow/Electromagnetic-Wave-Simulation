@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+from matplotlib.animation import FuncAnimation, PillowWriter
 import time
 from scipy.interpolate import interp1d
 
@@ -133,6 +133,8 @@ def animate_combined_wavefields(wavefields, S_values, save=False):
     if save:
         ani.save(ANIMATIONS + '1DRectangularWave.gif', writer='pillow')
     plt.show()
+
+    ani.save(ANIMATIONS + "/Fig_RectWave/frame_%03d.png", writer=animation.PillowWriter(fps=20))
 
 
 # Animate all wavefields

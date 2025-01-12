@@ -26,8 +26,8 @@ const = {
 
 L = 1.0  # Length of the simulation domain (m)
 nx = 100  # Number of spatial grid points
-nt = 30  # Number of time steps
-cdtds = 1 # Courant number
+nt = 150  # Number of time steps
+cdtds = 0.5 # Courant number
 
 mu = None
 eps = None
@@ -44,16 +44,24 @@ material = {
 
 g = Grid(nx, nt, L, cdtds, **material)
 upd = Updater()
-src = GaussianPulse(source_position=50, source_peak_timestep=10, source_width=2)
-#src = RickerWavelet(source_position=50, wavelength_dx=20, delay_multiple=50)
-
-bdr = ABC_2order()
-
+src = GaussianPulse(source_position=20, source_peak_timestep=20, source_width=5)
+bdr = ABC_1order()
 a = Simulation1D(g, upd, src, bdr, **const)
 
 a.run()
+a.animate(frame_interval=10, reescale_fields=True)
+a.plot_frame_Ez(10, filename="FigABCorder1_f10")
+a.plot_frame_Ez(50, filename="FigABCorder1_f50")
+a.plot_frame_Ez(60, filename="FigABCorder1_f60")
+a.plot_frame_Ez(70, filename="FigABCorder1_f70")
 
-a.save_frames(skip_frames=5, foldername="Frames")
-#a.plot_last_frame()
-# a.plot_waterfall(field="Ez", title=r"$E_3^-$", filename="Ez_waterfall")
+bdr = ABC_2order()
+a = Simulation1D(g, upd, src, bdr, **const)
+a.run()
+a.plot_frame_Ez(10, filename="FigABCorder2_f10")
+a.plot_frame_Ez(50, filename="FigABCorder2_f50")
+a.plot_frame_Ez(60, filename="FigABCorder2_f60")
+a.plot_frame_Ez(70, filename="FigABCorder2_f70")
+
+#a.plot_waterfall(field="Ez", title=r"$E_z$", filename="FigABCorder1", xlim=[0, 30], interval=20)
 # a.plot_waterfall(field="Hy", title=r"$H_2^-$", filename="Hy_waterfall")

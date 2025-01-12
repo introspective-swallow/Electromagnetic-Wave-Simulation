@@ -7,7 +7,7 @@ from tqdm import tqdm
 from matplotlib import pyplot as plt
 import numpy as np
 import matplotlib.animation as animation
-
+import os
 
 ANIMATIONS = "/home/gui/Repos/Electromagnetic-Wave-Simulation/animations/"
 FIGS = "/home/gui/Repos/Electromagnetic-Wave-Simulation/figs/"
@@ -64,15 +64,15 @@ class Simulation1D():
         self.historyE.append(self.grid.Ez.copy())
         self.historyH.append(self.grid.Hy.copy())
 
-    def plot_last_frame(self, save=False, filename=""):
+    def plot_frame(self, frame=-1, save=False, filename="", show=True):
         fig, axes = plt.subplots(2, 1, figsize=(8, 6))
         axtext = fig.add_axes([0.1, 0.02, 0.86, 1.86])
         axtext.axis("off")
         disptime = axtext.text(0.5,0.5, str(0), ha="center", va="top", fontsize=12)
         disptime.set_text(f"Time: {self.grid.nt*self.grid.dt:.2e} s")
 
-        axes[0].plot(range(self.grid.nx), self.historyE[-1], label='Ez')
-        axes[1].plot(range(self.grid.nx-1), self.historyH[-1], label='Hy', color='orange')
+        axes[0].plot(range(self.grid.nx), self.historyE[frame], label='Ez')
+        axes[1].plot(range(self.grid.nx-1), self.historyH[frame], label='Hy', color='orange')
 
         axes[0].set_xlim(0, self.grid.nx)
         axes[0].set_ylabel("Field amplitude")
@@ -87,8 +87,8 @@ class Simulation1D():
         plt.subplots_adjust(hspace=0.5)
 
         # Compute y-axis limits for each field
-        Ez_min, Ez_max = np.min(self.historyE[-1]), np.max(self.historyE[-1])
-        Hy_min, Hy_max = np.min(self.historyH[-1]), np.max(self.historyH[-1])
+        Ez_min, Ez_max = np.min(self.historyE), np.max(self.historyE)
+        Hy_min, Hy_max = np.min(self.historyH), np.max(self.historyH)
 
         # Add some padding to the y-axis limits
         Ez_min, Ez_max = 1.1 * Ez_min, 1.1 * Ez_max
@@ -101,10 +101,32 @@ class Simulation1D():
             if filename == "":
                 filename = "fdtd_simulation"+str(time.time())
             plt.savefig(FIGS + filename+'.png')
-            print(f"Animation saved as {filename}.gif.")
+            print(f"Animation saved as {filename}.png.")
+        if show:
+            plt.show()
+
+    def plot_frame_Ez(self, frame=-1, save=False, filename=""):
+        fig, ax = plt.subplots(figsize=(8, 6))
+        ax.plot(range(self.grid.nx), self.historyE[frame], label='Ez')
+        ax.set_xlim(0, self.grid.nx)
+        ax.set_ylabel("Field amplitude")
+        ax.set_xlabel("Grid index")
+        ax.legend()
+        if save or filename != "":
+            if filename == "":
+                filename = "fdtd_simulation"+str(time.time())
+            plt.savefig(FIGS + filename+'.png')
+            print(f"Animation saved as {filename}.png.")
         plt.show()
 
-    def animate(self, frame_interval=10, reescale_fields=True, save=False, filename=""):
+    def save_frames(self, skip_frames=1, foldername="Frames", frame_name="frame"):
+        if not os.path.exists(FIGS+foldername):
+            os.makedirs(FIGS+foldername)
+        for i, frame in enumerate(range(0, self.grid.nt, skip_frames)):
+            file_name = frame_name+str(i+1)
+            self.plot_frame(frame, save=True, filename=foldername+"/"+file_name, show=False)
+
+    def animate(self, frame_interval=10, reescale_fields=True, save=False, filename="", saveframes=False, foldername=""):
         # Reescale fields
         if reescale_fields:
             self.updater.re_escale_fields(self)
@@ -115,8 +137,8 @@ class Simulation1D():
         axtext.axis("off")
         disptime = axtext.text(0.5,0.5, str(0), ha="center", va="top", fontsize=12)
 
-        Ez_line, = axes[0].plot([], [], label='Ez')
-        Hy_line, = axes[1].plot([], [], label='Hy', color='orange')
+        Ez_line, = axes[0].plot([], [], label=r'$E_z$')
+        Hy_line, = axes[1].plot([], [], label=r'$H_y$', color='orange')
 
         axes[0].set_xlim(0, self.grid.nx)
         axes[0].set_ylabel("Field amplitude")
@@ -159,8 +181,9 @@ class Simulation1D():
             ani.save(ANIMATIONS+filename+".gif", writer="pillow", fps=20)
             print(f"Animation saved as {filename}.gif.")
         return fig, ani
+    
 
-    def plot_waterfall(self, field="Ez", title =None, save=False, filename="waterfall"):
+    def plot_waterfall(self, field="Ez", title =None, save=False, filename="waterfall", interval=1, xlim=None, tlim=None):
         """
         Generate a watesrfall chart for the Ez field history.
         """
@@ -176,7 +199,17 @@ class Simulation1D():
         time_steps = len(data)
         space_indices = range(data.shape[1])
 
-        
+        # Restrict the plot to a specific time range
+        if tlim is not None:
+            data = data[tlim[0]:tlim[1]]
+            time_steps = len(data)
+        # Restrict the plot to a specific space range
+        if xlim is not None:
+            data = data[:, xlim[0]:xlim[1]]
+            space_indices = range(data.shape[1])
+        # Apply interval
+        data = data[::interval]
+        time_steps = len(data)
 
         # Generate offset values for the waterfall chart
         for t in range(time_steps):
@@ -255,8 +288,44 @@ class Simulation2D():
         self.historyEz.append(self.grid.Ez.copy())
         self.historyHy.append(self.grid.Hy.copy())
 
-    def plot_last_frame(self, save=False, filename=""):
-        raise NotImplementedError
+    def plot_frame(self, frame=-1, field_names=[], save=False, filename=""):
+        fig, axs = plt.subplots(1, 3, figsize=(18, 6))
+        axtext = fig.add_axes([0.1, 0.02, 0.86, 1.86])
+        axtext.axis("off")
+        disptime = axtext.text(0.5,0.5, str(0), ha="center", va="top", fontsize=12)
+        disptime.set_text(f"Time: {self.grid.nt*self.grid.dt:.2e} s")
+
+        fields = [self.historyEx, self.historyEz, self.historyHy]
+
+        if len(field_names) == 0:
+            field_names = [r"$E_x$", r"$E_z$", r"$H_y$"]
+
+        # Use 90th percentile to set color range
+        color_ranges = [
+            (-np.percentile(field, 99), np.percentile(field, 99)) for field in fields
+        ]
+        colorbars = []
+        imgs = []
+
+        for i, ax in enumerate(axs):
+            im = ax.imshow(fields[i][frame]
+                      , vmin=color_ranges[i][0]
+                      , vmax=color_ranges[i][1]
+                      , cmap="RdBu"
+                      , interpolation="nearest")
+            imgs.append(im)
+            ax.set_title(field_names[i])
+            ax.set_xlabel("x")
+            ax.set_ylabel("z")
+            cbar = plt.colorbar(im, ax=ax, orientation="vertical")
+            colorbars.append(cbar)
+
+        if save or filename != "":
+            if filename == "":
+                filename = "2D_simulation"+str(time.time())
+            plt.savefig(FIGS+filename+'.png')
+            print(f"Frame saved as {filename}.png.")
+        plt.show()
 
     def animate(self, frame_interval=10, reescale_fields=False, save=False, filename="", time_colormap=False):
         # Visualization

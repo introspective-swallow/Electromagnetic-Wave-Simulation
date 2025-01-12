@@ -15,11 +15,11 @@ class Updater():
 
     def updateH(self, grid):
         for i in range(grid.nx-1):
-            grid.Hy[i] = grid.db[i] * ((grid.Ez[i + 1] - grid.Ez[i]) / grid.dx) + grid.da[i] * grid.Hy[i]
+            grid.Hy[i] = grid.db[i] * (grid.Ez[i + 1] - grid.Ez[i]) + grid.da[i] * grid.Hy[i]
 
     def updateE(self, grid):
         for i in range(1, grid.nx-1):
-            grid.Ez[i] = grid.cb[i] * ((grid.Hy[i] - grid.Hy[i - 1]) / grid.dx) + grid.ca[i] * grid.Ez[i]
+            grid.Ez[i] = grid.cb[i] * (grid.Hy[i] - grid.Hy[i - 1]) + grid.ca[i] * grid.Ez[i]
 
     def re_escale_fields(self, sim, H=None, E=None):
         if H is None:

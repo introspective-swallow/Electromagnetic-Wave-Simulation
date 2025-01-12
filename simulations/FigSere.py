@@ -1,7 +1,7 @@
 from electrology.simulation import Simulation1D
 from electrology.grid import Grid
 from electrology.updater import Updater
-from electrology.source import GaussianPulse, RickerWavelet
+from electrology.source import GaussianPulse, RickerWavelet, SmoothSinusoidal1D
 from electrology.boundary import ABC_1order, ABC_2order, Boundary_Update, ABC_1orderLeft
 import numpy as np
 
@@ -25,8 +25,8 @@ const = {
 }
 
 L = 1.0  # Length of the simulation domain (m)
-nx = 100  # Number of spatial grid points
-nt = 30  # Number of time steps
+nx = 1000  # Number of spatial grid points
+nt = 600  # Number of time steps
 cdtds = 1 # Courant number
 
 mu = None
@@ -44,16 +44,11 @@ material = {
 
 g = Grid(nx, nt, L, cdtds, **material)
 upd = Updater()
-src = GaussianPulse(source_position=50, source_peak_timestep=10, source_width=2)
-#src = RickerWavelet(source_position=50, wavelength_dx=20, delay_multiple=50)
-
+src = SmoothSinusoidal1D(source_position=nx//2, source_frequency=1e9, source_width=20)
 bdr = ABC_2order()
 
 a = Simulation1D(g, upd, src, bdr, **const)
 
 a.run()
-
-a.save_frames(skip_frames=5, foldername="Frames")
-#a.plot_last_frame()
-# a.plot_waterfall(field="Ez", title=r"$E_3^-$", filename="Ez_waterfall")
-# a.plot_waterfall(field="Hy", title=r"$H_2^-$", filename="Hy_waterfall")
+a.animate(reescale_fields=False)
+a.save_frames(skip_frames=25, foldername="FigSere", frame_name="Sere")

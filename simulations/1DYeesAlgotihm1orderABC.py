@@ -38,9 +38,6 @@ ce2 = (1 - dt * sigma / (2 * epsilon_0)) / (1 + dt * sigma / (2 * epsilon_0))
 ch1 = (dt / mu_0) / (1 + dt * sigma_star / (2 * mu_0))
 ch2 = (1 - dt * sigma_star / (2 * mu_0)) / (1 + dt * sigma_star / (2 * mu_0))
 
-print(dx, dt)
-print(f"ce1: {ce1}, ce2: {ce2}, ch1: {ch1}, ch2: {ch2}")
-
 # Gaussian pulse source
 tspace = np.arange(time_steps)
 source = np.exp(-((tspace - source_peak_timestep) ** 2) / (2 * source_width ** 2))
@@ -71,7 +68,6 @@ for n in range(time_steps):
 
     # Apply source
     Ez[source_position] += source[n]
-    print(source[n])
 
     # First order ABC
     Ez[0] = ABC_left_constant + abc_factor * (Ez[1]-Ez[0])  
@@ -131,7 +127,7 @@ ani = animation.FuncAnimation(fig, update, frames=len(Ez_history), interval=200,
 plt.show()
 
 # Save animation as GIF
-#file_name = "1DYeesAlgorithm1orderABC"
-#ani.save(ANIMATIONS+file_name, writer="pillow", fps=20)
-#print(f"Animation saved as {file_name}.")
+file_name = "1DYeesAlgorithm1orderABC"
+ani.save(ANIMATIONS+file_name, writer="pillow", fps=20)
+print(f"Animation saved as {file_name}.")
 
