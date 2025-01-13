@@ -4,8 +4,8 @@ import matplotlib.animation as animation
 import time
 import os
 
-ANIMATIONS = "/home/gui/Repos/Electromagnetic-Wave-Simulation/animations/"
-FIGS = "/home/gui/Repos/Electromagnetic-Wave-Simulation/figs/"
+ANIMATIONS = ""
+FIGS = ""
 
 # Acoustic simulation parameters
 s66 = 1.5 # Strain coefficient

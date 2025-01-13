@@ -4,8 +4,8 @@ from matplotlib.animation import FuncAnimation
 import time
 from scipy.interpolate import interp1d
 
-ANIMATIONS = "/home/gui/Repos/Electromagnetic-Wave-Simulation/animations/"
-FIGS = "/home/gui/Repos/Electromagnetic-Wave-Simulation/figs/"
+ANIMATIONS = "/animations/"
+FIGS = "/figs/"
 
 def fdtd_1d(c, dt, dx, nx, nt, wavelength, initial_conditions):
     """

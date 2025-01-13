@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import time
 
-ANIMATIONS = "/home/gui/Repos/Electromagnetic-Wave-Simulation/animations/"
-FIGS = "/home/gui/Repos/Electromagnetic-Wave-Simulation/figs/"
+ANIMATIONS = "/animations/"
+FIGS = "/figs/"
 
 # Simulation parameters
 c = 3e8  # Speed of light (m/s)

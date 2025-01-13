@@ -5,8 +5,8 @@ import time
 from scipy.interpolate import interp1d
 import os
 
-ANIMATIONS = "/home/gui/Repos/Electromagnetic-Wave-Simulation/animations/"
-FIGS = "/home/gui/Repos/Electromagnetic-Wave-Simulation/figs/"
+ANIMATIONS = "/animations/"
+FIGS = "/figs/"
 
 def fdtd_1d(c, dt, dx, nx, nt, initial_conditions):
     """

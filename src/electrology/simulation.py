@@ -9,8 +9,8 @@ import numpy as np
 import matplotlib.animation as animation
 import os
 
-ANIMATIONS = "/home/gui/Repos/Electromagnetic-Wave-Simulation/animations/"
-FIGS = "/home/gui/Repos/Electromagnetic-Wave-Simulation/figs/"
+ANIMATIONS = "/animations/"
+FIGS = "/figs/"
 
 class Simulation1D():
     def __init__(self
