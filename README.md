@@ -9,7 +9,7 @@ One dimensional wave for $H_y, E_z$ fields and $TE_y$ mode for ($E_x,E_z,H_y$) f
 
 There is a Grid, Updater, Source, Boundary and Simulation base classes which are assembled together choosing the appropriate ones for 1D or 2D simulation. Some visualization options (the ones used to generate figures in the presentation) are included in in each Simulation class to create animations, plot specific frames and make waterfall charts.
 
-Boundary conditions implemented:
+Boundary conditions implemented 1D:
 - Simple ABC (first order ABC when $S=1$)
 - First order ABC
 - Second order ABC
@@ -18,6 +18,10 @@ Sources implemented in 1D:
 - Gaussian Pulse puntual source
 - RickerWavelet puntual source
 - Sinusoidal spatial-smoothed puntual source
+- PML (To be implemented)
+
+Boundary conditions implemented 2D:
+- PML (To be implemented)
 
 Sources implemented in 2D:
 - Gaussian Pulse spatial-smoothed puntual source
