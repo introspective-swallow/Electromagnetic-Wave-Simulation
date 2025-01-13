@@ -1,1 +1,30 @@
-Implementation of various electromagnetic wave simulations using Python.
+Implementation of FDTD method in Python showcased in a presentation. The code is based on the book "Understanding the Finite-Difference Time-Domain Method" by John B. Schneider.
+
+One dimensional wave for $H_y, E_z$ fields and $TE_y$ mode for ($E_x,E_z,H_y$) fields implemented, easily adaptable to other modes/field pairs. To see en example simulation of each see Fig1Dsinusoidal and FigTEymode files.
+
+![alt text](animations/FigureSere.gif)
+
+![alt text](animations/2DGaussianPulse.gif)
+## Quick introduction
+
+There is a Grid, Updater, Source, Boundary and Simulation base classes which are assembled together choosing the appropriate ones for 1D or 2D simulation. Some visualization options (the ones used to generate figures in the presentation) are included in in each Simulation class to create animations, plot specific frames and make waterfall charts.
+
+Boundary conditions implemented:
+- Simple ABC (first order ABC when $S=1$)
+- First order ABC
+- Second order ABC
+
+Sources implemented in 1D:
+- Gaussian Pulse puntual source
+- RickerWavelet puntual source
+- Sinusoidal spatial-smoothed puntual source
+
+Sources implemented in 2D:
+- Gaussian Pulse spatial-smoothed puntual source
+- Sinusoidal spatial-smoothed puntual source
+
+## Installation
+To install the package, clone the repository and run the following command in its root folder:
+```bash
+pip install .
+```
