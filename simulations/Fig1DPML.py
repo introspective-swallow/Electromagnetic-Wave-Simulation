@@ -20,7 +20,7 @@ const = {
 
 L = 1.0  # Length of the simulation domain (m)
 nx = 200  # Number of spatial grid points
-nt = 500  # Number of time steps
+nt = 150  # Number of time steps
 cdtds = 1 # Courant number
 
 
@@ -66,4 +66,7 @@ src = GaussianPulse(source_position=50, source_peak_timestep=30, source_width=5)
 a = Simulation1D(g, upd, src, ABC_1orderLeft(), **const)
 
 a.run()
-a.animate(frame_interval=10, reescale_fields=False)
+
+a.save_frames(5, "Fig1DPML", "PML")
+
+# a.animate(frame_interval=10, reescale_fields=False)

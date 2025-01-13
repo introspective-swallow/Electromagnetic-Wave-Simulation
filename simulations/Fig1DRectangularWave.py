@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+from matplotlib import animation
+from matplotlib.animation import FuncAnimation, PillowWriter
 import time
 from scipy.interpolate import interp1d
 
@@ -23,7 +24,7 @@ def fdtd_1d(c, dt, dx, nx, nt, initial_conditions):
         np.ndarray: 2D array with the wavefield at all time steps.
     """
     # Courant condition check
-    # assert c * dt / dx <= 1, "Stability condition violated: c * dt / dx must be <= 1."
+    assert c * dt / dx <= 1, "Stability condition violated: c * dt / dx must be <= 1."
 
     # Start counting the simulation time
     start_time = time.time()
@@ -52,33 +53,33 @@ def fdtd_1d(c, dt, dx, nx, nt, initial_conditions):
 # Simulation parameters
 c = 1.0            # Wave propagation speed
 dx = 0.01          # Spatial step
-nx = 300           # Number of spatial points
-xmax = dx * nx
+nx = 200           # Number of spatial points
+nt = 10           # Number of time steps
 
 # Define an initial condition for t=0,1
-def gaussian_pulse(nx, dt, width=80, a=1.0, b=0.5, cc=0.05):
-    # Set a Gaussian pulse as initial condition
-    # t0 is the initial condition at time t=0
-    # t1 should be the initial condition projected one time step into the future
-    x = np.linspace(0, xmax, nx)
-    t0 = a* np.exp(- (x - b) ** 2 / (2*cc**2))
-    t1 = a* np.exp(- (x - b - c*dt) ** 2 / (2*cc**2))
+def initial_conditions(nx, dt):
+    t0 = np.zeros(nx)
+    t0[(nx // 2-20 - 50):(nx // 2+20 - 50)] = np.ones(40)
+    t1 = np.zeros(nx)
+    S = c*dt/dx
+    # Interpolate next time step: u(i,t+dt) = (1-S)u(i,t) + S(u(i-1,t))
+    t1 = (1-S)*t0 + S*np.roll(t0,1)
     return t0, t1
 
 # Courant stability factors to test
-S_values = [1.005, 1.0]
+S_values = [1.0, 0.99, 0.5]
 
 # Time step corresponding to S values
 dt_values = [S * dx / c for S in S_values]
 
 # Choose a time maximum and choose the number of time steps for each S value so that it perfectly matches the time maximum
-nt = 200
+nt = 101
 nt_values = [int(nt * dt_values[0] / dt) for dt in dt_values]
 print("Max time for each:", [dt * nt for dt, nt in zip(dt_values, nt_values)])
 print("Number of time steps for each:", nt_values)
 
 # Compute wavefields for all S values
-wavefields = [fdtd_1d(c, dt, dx, nx, nt, gaussian_pulse) for dt, nt in zip(dt_values, nt_values)]
+wavefields = [fdtd_1d(c, dt, dx, nx, nt, initial_conditions) for dt, nt in zip(dt_values, nt_values)]
 
 # Resample wavefields to match the smallest time step
 def resample_wavefields(wavefields, dt_values, common_dt, total_time):
@@ -130,10 +131,33 @@ def animate_combined_wavefields(wavefields, S_values, save=False):
         return lines
 
     # Create the animation
-    ani = FuncAnimation(fig, update, frames=range(len(aligned_wavefields[0])), blit=False, repeat=True, interval=50)
+    ani = FuncAnimation(fig, update, frames=range(len(aligned_wavefields[0])), blit=False, repeat=True, interval=100)
     if save:
-        ani.save(ANIMATIONS + '1DGaussianPulseUnstable.gif', writer='pillow')
+        ani.save(ANIMATIONS + '1DRectangularWave.gif', writer='pillow')
     plt.show()
 
+    ani.save(ANIMATIONS + "/Fig_RectWave/frame_%03d.png", writer=animation.PillowWriter(fps=20))
+
+def save_frames(wavefields, S_values, skipframes=1, filename="1DRectangularWave", foldername=FIGS):
+    # Common time step based on the smallest dt
+    common_dt = max(dt_values)
+
+    # Resample wavefields
+    aligned_wavefields = resample_wavefields(wavefields, dt_values, common_dt, nt * dt_values[0])
+
+    for j, i in enumerate(range(0, wavefields[0].shape[0], skipframes)):
+        fig, ax = plt.subplots(figsize=(10, 5))
+        for k, S in enumerate(S_values):
+            ax.plot(aligned_wavefields[k][i], label=f"S = {S}")
+        ax.set_xlabel("Position")
+        ax.set_ylabel("Amplitude")
+        ax.set_ylim(-0.5, 1.5)
+        ax.legend()
+        ax.set_title(f"Time: {(i) * dt_values[0]:.2f} s")
+        plt.savefig(foldername + filename + f"{j+1}.png")
+        print(f"Frame {j} saved as {foldername + filename + f'{j+1}.png'}")
+
+save_frames(wavefields, S_values, skipframes=5, filename="1DRectangularWave", foldername=FIGS + "1DRectangularWave/")
+
 # Animate all wavefields
-animate_combined_wavefields(wavefields, S_values, save=False)
+# animate_combined_wavefields(wavefields, S_values, save=False)

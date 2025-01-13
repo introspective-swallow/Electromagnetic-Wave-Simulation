@@ -100,24 +100,26 @@ class Simulation1D():
         if save or filename != "":
             if filename == "":
                 filename = "fdtd_simulation"+str(time.time())
-            plt.savefig(FIGS + filename+'.png')
-            print(f"Animation saved as {filename}.png.")
+            plt.savefig(FIGS + filename+'.jpg')
+            print(f"Animation saved as {filename}.jpg.")
         if show:
             plt.show()
 
-    def plot_frame_Ez(self, frame=-1, save=False, filename=""):
+    def plot_frame_Ez(self, frame=-1, save=False, filename="", show=True):
         fig, ax = plt.subplots(figsize=(8, 6))
         ax.plot(range(self.grid.nx), self.historyE[frame], label='Ez')
         ax.set_xlim(0, self.grid.nx)
         ax.set_ylabel("Field amplitude")
         ax.set_xlabel("Grid index")
+        ax.set_ylim(1.1 * np.min(self.historyE), 1.1 * np.max(self.historyE))
         ax.legend()
         if save or filename != "":
             if filename == "":
                 filename = "fdtd_simulation"+str(time.time())
             plt.savefig(FIGS + filename+'.png')
             print(f"Animation saved as {filename}.png.")
-        plt.show()
+        if show:
+            plt.show()
 
     def save_frames(self, skip_frames=1, foldername="Frames", frame_name="frame"):
         if not os.path.exists(FIGS+foldername):
@@ -125,6 +127,14 @@ class Simulation1D():
         for i, frame in enumerate(range(0, self.grid.nt, skip_frames)):
             file_name = frame_name+str(i+1)
             self.plot_frame(frame, save=True, filename=foldername+"/"+file_name, show=False)
+
+    def save_frames_Ez(self, skip_frames=1, foldername="Frames", frame_name="frame"):
+        if not os.path.exists(FIGS+foldername):
+            os.makedirs(FIGS+foldername)
+        for i, frame in enumerate(range(0, self.grid.nt, skip_frames)):
+            file_name = frame_name+str(i+1)
+            self.plot_frame_Ez(frame, save=True, filename=foldername+"/"+file_name, show=False)
+
 
     def animate(self, frame_interval=10, reescale_fields=True, save=False, filename="", saveframes=False, foldername=""):
         # Reescale fields
@@ -288,7 +298,7 @@ class Simulation2D():
         self.historyEz.append(self.grid.Ez.copy())
         self.historyHy.append(self.grid.Hy.copy())
 
-    def plot_frame(self, frame=-1, field_names=[], save=False, filename=""):
+    def plot_frame(self, frame=-1, field_names=[], save=False, filename="", show=True):
         fig, axs = plt.subplots(1, 3, figsize=(18, 6))
         axtext = fig.add_axes([0.1, 0.02, 0.86, 1.86])
         axtext.axis("off")
@@ -325,7 +335,15 @@ class Simulation2D():
                 filename = "2D_simulation"+str(time.time())
             plt.savefig(FIGS+filename+'.png')
             print(f"Frame saved as {filename}.png.")
-        plt.show()
+        if show:
+            plt.show()
+
+    def save_frames(self, skip_frames=1, foldername="Frames", frame_name="frame"):
+        if not os.path.exists(FIGS+foldername):
+            os.makedirs(FIGS+foldername)
+        for i, frame in enumerate(range(0, self.grid.nt, skip_frames)):
+            file_name = frame_name+str(i+1)
+            self.plot_frame(frame, save=True, filename=foldername+"/"+file_name, show=False)
 
     def animate(self, frame_interval=10, reescale_fields=False, save=False, filename="", time_colormap=False):
         # Visualization

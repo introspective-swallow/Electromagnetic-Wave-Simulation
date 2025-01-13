@@ -53,5 +53,4 @@ bdr = Boundary_Update()
 a = Simulation2D(g, upd, src, bdr, **const)
 
 a.run()
-
-a.plot_frame(filename="FigTEy_mode", field_names=[r"$E_1$", r"$E_3$", r"$H_2$"])
+a.save_frames(skip_frames=2, foldername="TEymode", frame_name="TEymode")

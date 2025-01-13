@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import time
 from scipy.interpolate import interp1d
+import os
 
 ANIMATIONS = "/home/gui/Repos/Electromagnetic-Wave-Simulation/animations/"
 FIGS = "/home/gui/Repos/Electromagnetic-Wave-Simulation/figs/"
@@ -93,10 +94,10 @@ print("Number of time steps for each S value:", nt_values)
 print("Max time for each:", [dt * nt for dt, nt in zip(dt_values, nt_values)])
 
 
-def plot_last_timestep(wavefields, S_values, save=False):
+def plot_frame(wavefields, S_values, frame=-1, save=False, filename="1DGaussianPulse", foldername=FIGS, show=True):
     plt.figure(figsize=(10, 5))
     for i, S in enumerate(S_values):
-        plt.plot(wavefields[i][-1], label=f"S = {S}")
+        plt.plot(wavefields[i][frame], label=f"S = {S}")
 
     plt.xlabel("Position")
     plt.ylabel("Amplitude")
@@ -104,13 +105,22 @@ def plot_last_timestep(wavefields, S_values, save=False):
     plt.text(0.02, 0.95, f"t = {tmax:.2f}s", transform=plt.gca().transAxes, fontsize=12)
     # Set the x-axis to be in a range around nmax//2 + tmax*c
     plt.xlim(nx // 2 + tmax*c/dx - 50, nx // 2 + tmax*c /dx+ 50)
+    plt.ylim(-1.5, 1.5)
     plt.legend()
     if save:
-        plt.savefig(FIGS + '1DGaussianPulse.png')
-    plt.show()
+        if not os.path.exists(foldername):
+            os.makedirs(foldername)
+        plt.savefig(foldername + filename + '.png')
+        print(f"Frame {frame} saved as {foldername + filename + '.png'}")
+    if show == True:
+        plt.show()
+
+def save_frames(wavefields, S_values, skipframes=1, filename="1DGaussianPulse", foldername=FIGS):
+    for j, i in enumerate(range(0, wavefields[0].shape[0], skipframes)):
+        plot_frame(wavefields, S_values, frame=i, save=True, filename=filename + f"{j+1}", foldername=foldername, show=False)
 
 # Compute wavefields for all S values
 wavefields = [fdtd_1d(c, dt, dx, nx, nt, initial_conditions) for dt, nt in zip(dt_values, nt_values)]
 
-plot_last_timestep(wavefields, S_values, save=True)
+save_frames(wavefields, S_values, skipframes=5, filename="1DRectangularWave", foldername=FIGS + "1DRectangularWave/")
 
